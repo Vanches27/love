@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Любовь для Ангелины</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2b0a3d 0%, #1a0630 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            height: 100%;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        h1 {
+            color: #ffffff;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            margin: 0 20px 30px;
+            text-shadow: 0 0 10px rgba(255, 64, 129, 0.8);
+            z-index: 10;
+            font-weight: 700;
+            letter-spacing: 1px;
+            line-height: 1.3;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff4081, 0 0 20px #ff4081;
+            }
+            to {
+                text-shadow: 0 0 10px #fff, 0 0 20px #ff79b0, 0 0 30px #ff79b0, 0 0 40px #ff79b0;
+            }
+        }
+        
+        .apology {
+            color: #f8bbd0;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            margin: 30px 20px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease;
+            z-index: 10;
+            max-width: 80%;
+            text-align: center;
+            line-height: 1.4;
+            background: rgba(123, 31, 162, 0.3);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 24px;
+            animation: float 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            opacity: 0;
+            z-index: 1;
+            filter: drop-shadow(0 0 5px currentColor);
+            will-change: transform, opacity;
+            pointer-events: none;
+            user-select: none;
+            bottom: 70vh; /* Сердца появляются выше */
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.9;
+                transform: translate(0, -10px) rotate(10deg) scale(1);
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate(calc(-50vw + 100px), -100vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+        
+        .signature {
+            margin: 40px 20px 0;
+            font-style: italic;
+            color: #ce93d8;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            opacity: 0;
+            transition: opacity 2s ease 3s;
+            z-index: 10;
+        }
+        
+        .show-signature {
+            opacity: 1;
+        }
+        
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        /* Оптимизация для мобильных устройств */
+        @media (max-width: 768px) {
+            .apology {
+                max-width: 90%;
+                padding: 12px;
+            }
+            
+            .heart {
+                font-size: 20px;
+                animation-duration: 10s;
+                bottom: 60vh; /* На мобильных появляются немного ниже */
+            }
+            
+            h1 {
+                animation: glow-mobile 2s ease-in-out infinite alternate;
+            }
+            
+            @keyframes glow-mobile {
+                from {
+                    text-shadow: 0 0 5px #fff, 0 0 8px #fff, 0 0 10px #ff4081;
+                }
+                to {
+                    text-shadow: 0 0 8px #fff, 0 0 15px #ff79b0, 0 0 20px #ff79b0;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">Я люблю Ангелину ❤️</h1>
+    <div class="apology" id="apology">
+        Каждое сердечко здесь - это частичка моего чувства к тебе. Ты самое прекрасное, что со мной случилось <br>
+    </div>
+    <div class="signature" id="signature">Твой любимый</div>
+    
+    <div class="hearts-container" id="heartsContainer"></div>
+    
+    <script>
+        // Оптимизация: ограничение количества сердец для мобильных устройств
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const heartTypes = ["❤️", "🧡", "💛", "💚", "💙", "💜", "🤎", "🖤", "🤍", "💖", "💗", "💓", "💘", "💝", "💞", "💕", "💟"];
+        const colors = ["#ff4081", "#ff79b0", "#ff9ec6", "#ffb3d9", "#ffccff", "#ffb6c1", "#ff69b4", "#ff1493"];
+        let heartCount = 0;
+        const maxHearts = isMobile ? 30 : 100;
+        
+        function createHeart() {
+            if (heartCount > maxHearts) return;
+            
+            const heart = document.createElement("div");
+            heart.classList.add("heart");
+            heart.innerHTML = heartTypes[Math.floor(Math.random() * heartTypes.length)];
+            
+            // Позиционирование - появляются в верхней части экрана
+            heart.style.left = Math.random() * 100 + "vw";
+            
+            const size = isMobile ? 10 + Math.random() * 20 : 15 + Math.random() * 30;
+            const duration = isMobile ? 8 + Math.random() * 8 : 6 + Math.random() * 6;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const delay = Math.random() * 5;
+            
+            heart.style.fontSize = size + "px";
+            heart.style.animationDuration = duration + "s";
+            heart.style.animationDelay = delay + "s";
+            heart.style.color = color;
+            
+            // Добавляем небольшое случайное смещение по вертикали в начальной позиции
+            heart.style.bottom = (70 + Math.random() * 10) + 'vh';
+            
+            document.getElementById("heartsContainer").appendChild(heart);
+            heartCount++;
+            
+            setTimeout(() => {
+                heart.remove();
+                heartCount--;
+            }, (duration + delay) * 1000);
+        }
+        
+        // Добавляем дополнительное мерцание заголовку
+        function pulseTitle() {
+            const title = document.getElementById('title');
+            setInterval(() => {
+                title.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    title.style.transform = 'scale(1)';
+                }, 500);
+            }, 2000);
+        }
+        
+        // Показываем извинение через 1.5 секунды
+        setTimeout(() => {
+            document.getElementById("apology").classList.add("show");
+            setTimeout(() => {
+                document.getElementById("signature").classList.add("show-signature");
+            }, 1000);
+        }, 1500);
+        
+        // Создаем сердечки с оптимизацией для мобильных
+        function generateHearts() {
+            // Первая партия
+            const initialHearts = isMobile ? 20 : 50;
+            for (let i = 0; i < initialHearts; i++) {
+                setTimeout(createHeart, Math.random() * 3000);
+            }
+            
+            // Постоянное добавление с разным интервалом
+            const interval = isMobile ? 400 : 200;
+            setInterval(createHeart, interval);
+        }
+        
+        // Запускаем после загрузки с проверкой готовности DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            generateHearts();
+            pulseTitle();
+        });
+        
+        // Оптимизация: остановка анимации при скрытии вкладки
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                document.querySelectorAll('.heart').forEach(heart => {
+                    heart.style.animationPlayState = 'paused';
+                });
+                document.getElementById('title').style.animationPlayState = 'paused';
+            } else {
+                document.querySelectorAll('.heart').forEach(heart => {
+                    heart.style.animationPlayState = 'running';
+                });
+                document.getElementById('title').style.animationPlayState = 'running';
+            }
+        });
+    </script>
+</body>
+</html>
